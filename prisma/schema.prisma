@@ -1,0 +1,145 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// Your models goes here ...
+
+// model User {
+//   id        String   @id @default(uuid())
+//   name      String
+//   email     String   @unique
+//   role      Role     @default(user)
+//   avatar    String?
+//   posts     Post[]
+//   createdAt DateTime @default(now()) @db.Timestamp(3)
+//   updatedAt DateTime @updatedAt @db.Timestamp(3)
+// }
+
+// model Post {
+//   id        String   @id @default(uuid())
+//   name      String   @unique
+//   image     String
+//   user      User?    @relation(fields: [user_id], references: [id])
+//   user_id   String?
+//   createdAt DateTime @default(now()) @db.Timestamp(3)
+//   updatedAt DateTime @updatedAt @db.Timestamp(3)
+// }
+
+// enum Role {
+//   user
+//   admin
+// }
+
+model Movie {
+  MovieID     Int      @id @default(autoincrement())
+  Title       String   @db.VarChar(256)
+  Description String   @db.VarChar(512)
+  Duration    DateTime
+  Language    String   @db.VarChar(16)
+  ReleaseDate DateTime
+  Country     String   @db.VarChar(64)
+  Genre       String   @db.VarChar(20)
+  shows       Show[]
+}
+
+model Show {
+  ShowID       Int         @id @default(autoincrement())
+  Date         DateTime
+  StartTime    DateTime
+  EndTime      DateTime
+  CinemaHallID Int
+  MovieID      Int
+  movie        Movie       @relation(fields: [MovieID], references: [MovieID])
+  cinemaHall   Cinema_Hall @relation(fields: [CinemaHallID], references: [CinemaHallID])
+  bookings     Booking[]
+  showSeats    Show_Seat[]
+}
+
+model Booking {
+  BookingID     Int         @id @default(autoincrement())
+  NumberOfSeats Int
+  Timestamp     DateTime
+  Status        Int
+  UserID        Int
+  ShowID        Int
+  user          User        @relation(fields: [UserID], references: [UserID])
+  show          Show        @relation(fields: [ShowID], references: [ShowID])
+  payments      Payment[]
+  showSeats     Show_Seat[]
+}
+
+model User {
+  UserID   Int       @id @default(autoincrement())
+  Name     String    @db.VarChar(64)
+  Password String    @db.VarChar(20)
+  Email    String    @db.VarChar(64)
+  Phone    String    @db.VarChar(16)
+  bookings Booking[]
+}
+
+model Payment {
+  PaymentID           Int      @id @default(autoincrement())
+  Amount              Float
+  Timestamp           DateTime
+  DiscountCouponID    Int?
+  RemoteTransactionID Int?
+  PaymentMethod       Int
+  BookingID           Int
+  booking             Booking  @relation(fields: [BookingID], references: [BookingID])
+}
+
+model Cinema {
+  CinemaID         Int           @id @default(autoincrement())
+  Name             String        @db.VarChar(64)
+  TotalCinemaHalls Int
+  CityID           Int
+  city             City          @relation(fields: [CityID], references: [CityID])
+  cinemaHalls      Cinema_Hall[]
+}
+
+model Cinema_Hall {
+  CinemaHallID Int           @id @default(autoincrement())
+  Name         String        @db.VarChar(64)
+  TotalSeats   Int
+  CinemaID     Int
+  cinema       Cinema        @relation(fields: [CinemaID], references: [CinemaID])
+  shows        Show[]
+  cinemaSeats  Cinema_Seat[]
+}
+
+model Cinema_Seat {
+  CinemaSeatID Int         @id @default(autoincrement())
+  SeatNumber   Int
+  Type         Int
+  CinemaHallID Int
+  cinemaHall   Cinema_Hall @relation(fields: [CinemaHallID], references: [CinemaHallID])
+  showSeats    Show_Seat[]
+}
+
+model City {
+  CityID  Int      @id @default(autoincrement())
+  Name    String   @db.VarChar(64)
+  State   String   @db.VarChar(64)
+  ZipCode String   @db.VarChar(16)
+  cinemas Cinema[]
+}
+
+model Show_Seat {
+  ShowSeatID   Int         @id @default(autoincrement())
+  Status       Int
+  Price        Float
+  CinemaSeatID Int
+  ShowID       Int
+  BookingID    Int
+  cinemaSeat   Cinema_Seat @relation(fields: [CinemaSeatID], references: [CinemaSeatID])
+  show         Show        @relation(fields: [ShowID], references: [ShowID])
+  booking      Booking     @relation(fields: [BookingID], references: [BookingID])
+}
